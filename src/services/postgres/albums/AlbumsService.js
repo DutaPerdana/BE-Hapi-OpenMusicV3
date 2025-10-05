@@ -45,7 +45,7 @@ class AlbumsService {
   async getAlbumById(id) {
     // 1. Ambil detail album
     const albumQuery = {
-      text: 'SELECT id, name, year FROM albums WHERE id = $1',
+      text: 'SELECT * FROM albums WHERE id = $1',
       values: [id],
     };
     const albumResult = await this._pool.query(albumQuery);
@@ -76,6 +76,7 @@ class AlbumsService {
       id: album.id,
       name: album.name,
       year: album.year,
+      coverUrl: album.cover || null,
       songs: songs, // Tambahkan properti songs
     };
   }
@@ -90,6 +91,20 @@ class AlbumsService {
 
     if (!result.rows.length) {
       throw new NotFoundError('gagal memperbaharyi album, id tidak ditemukan');
+    }
+  }
+
+  //tambahakn untuk post covers
+  async addCoverAlbum(id, fileLocation){
+    const query = {
+      text: 'UPDATE albums SET cover = $1 WHERE id = $2',
+      values: [fileLocation, id],
+    };
+    // console.log(id);
+    const result = await this._pool.query(query);
+    // console.log(result);
+    if (!result.rowCount) {
+      throw new NotFoundError('gagal memperbaharui album, id tidak ditemukan');
     }
   }
 

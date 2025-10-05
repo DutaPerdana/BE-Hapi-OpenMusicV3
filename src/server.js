@@ -10,6 +10,8 @@ const SongsService = require('./services/postgres/songs/SongsService');
 require('dotenv').config();
 
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 //users
 const users = require('./api/users');
 const UsersService = require('./services/postgres/users/usersService');
@@ -32,6 +34,16 @@ const CollaborationsService = require('./services/postgres/collaborations/collab
 const collaborations = require('./api/collaborations');
 const CollaborationsValidator = require('./validator/collaborations');
 
+// Exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+// uploads
+const StorageService = require('./services/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
+
 const init = async () => {
   //daftarkan albumj service
   const albumsService = new AlbumsService();
@@ -40,6 +52,7 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistsService(collaborationsService);
+  const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/covers'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -55,6 +68,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -81,7 +97,9 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storageService: storageService,
         validator: AlbumsValidator,
+        uploadsvalidator: UploadsValidator,
       },
     },
     {
@@ -120,6 +138,14 @@ const init = async () => {
         collaborationsService,
         playlistsService,
         validator: CollaborationsValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
       },
     },
   ]);
