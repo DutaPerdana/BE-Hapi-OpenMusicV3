@@ -9,6 +9,7 @@ const AlbumPayloadSchema = Joi.object({
     .min(1900)
     .max(new Date().getFullYear() + 5)
     .required(), // Menambahkan validasi tahun yang lebih spesifik. //required artinya wajid di isi
+  cover: Joi.string().uri().optional(),
 });
 
 module.exports = { AlbumPayloadSchema };
