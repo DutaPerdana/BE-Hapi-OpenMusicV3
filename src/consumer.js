@@ -26,7 +26,7 @@ const listen = async () => {
       const result = await playlistsService.getPlaylistSong(id);
       const resultt = {
         playlists: result,
-      }
+      };
       console.log(resultt);
       await mailSender.sendEmail(targetEmail, JSON.stringify(resultt, null, 2));
       console.log(`Email untuk playlist ${id} berhasil dikirim ke ${targetEmail}`);
